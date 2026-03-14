@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="google-site-verification" content="4HWuluir9fJHITCvzBwwhABC0Z0JPdRzcapCeYLwtVo" />
+<link rel="icon" type="image/png" href="favicon.png">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chanda Pest Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root { --bg-color: #050505; --surface: #121212; --surface-light: #1e1e1e; --accent: #d4af37; --accent-glow: rgba(212, 175, 55, 0.4); --text-main: #ffffff; --text-muted: #888888; --danger: #ff3b30; --success: #32d74b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--bg-color); color: var(--text-main); overflow-x: hidden; transition: background-color 0.3s ease; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; }
+        ::-webkit-scrollbar { display: none; }
+
+        /* General UI */
+        .btn { display: block; width: 100%; padding: 15px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; font-family: 'Poppins', sans-serif; transition: 0.3s; }
+        .btn-primary { background: var(--accent); color: #000; box-shadow: 0 4px 15px var(--accent-glow); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-success { background: var(--success); color: #000; box-shadow: 0 4px 15px rgba(50,215,75,0.3); }
+        .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+        
+        .form-control { width: 100%; background: var(--surface-light); border: 1px solid #333; padding: 14px 14px 14px 40px; border-radius: 12px; color: #fff; font-size: 14px; outline: none; margin-bottom:15px; }
+        .form-control:focus { border-color: var(--accent); }
+        .input-icon { position: absolute; left: 15px; top: 16px; color: var(--text-muted); font-size: 14px; }
+        .input-group { position: relative; }
+
+        /* Layout & Nav */
+        header { background: rgba(18,18,18,0.95); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid #222; }
+        .header-title { font-size: 18px; color: var(--accent); font-weight: 600; }
+        .nav-icons i { font-size: 20px; margin-left: 15px; cursor: pointer; position: relative; }
+        .badge { position: absolute; top: -5px; right: -5px; background: var(--danger); width: 10px; height: 10px; border-radius: 50%; display: none; }
+
+        .tab-content { display: none; padding-bottom: 90px; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(18,18,18,0.95); backdrop-filter: blur(15px); border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 12px 0 20px; z-index: 1000; }
+        .nav-item { text-align: center; color: var(--text-muted); font-size: 11px; font-weight: 500; cursor: pointer; transition: 0.3s; width: 33%; }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; transition: 0.3s; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item.active i { transform: translateY(-3px); text-shadow: 0 0 10px var(--accent-glow); }
+
+        /* Modals & Cards */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: flex-end; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--surface); width: 100%; border-radius: 25px 25px 0 0; padding: 25px 20px 40px; max-height: 85vh; overflow-y: auto; border-top: 1px solid #333; }
+        .card { background: var(--surface-light); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid #2a2a2a; }
+        
+        .notice-box { background: rgba(212, 175, 55, 0.05); border: 1px dashed var(--accent); padding: 15px; border-radius: 12px; margin-top: 15px; text-align: center; color: var(--accent); font-size: 14px; font-weight: 500; line-height: 1.5; }
+
+        .tech-box { display: flex; align-items: center; gap: 15px; background: #222; padding: 12px; border-radius: 12px; margin: 15px 0; border: 1px solid #333; }
+        .tech-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--surface); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink: 0; border: 1px solid var(--accent); }
+
+        .stars i { font-size: 26px; color: #444; cursor: pointer; transition: 0.2s; }
+        .stars i.active { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; color: #000; padding: 12px 25px; border-radius: 30px; font-weight: 600; font-size: 13px; z-index: 3000; opacity: 0; visibility: hidden; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .toast.show { opacity: 1; visibility: visible; }
+        
+        .book-btn-mini { font-size:10px; color:#000; background:var(--accent); padding:6px 12px; border-radius:6px; font-weight:bold; display:inline-block; text-transform:uppercase; }
+    </style>
+</head>
+<body>
+
+    <!-- Auth Screen -->
+    <div id="authScreen" style="height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:var(--bg-color);">
+        <div class="card" style="width:100%; max-width:400px; text-align:center; padding:30px 20px;">
+            <h1 style="color:var(--accent); margin-bottom:5px;" id="authLogoName">Chanda Pest</h1>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:25px;" id="authSubtitle">Login to continue</p>
+            <div id="signupFields" style="display:none;"><div class="input-group"><i class="fa-solid fa-user input-icon"></i><input type="text" id="authName" class="form-control" placeholder="Full Name"></div></div>
+            <div class="input-group"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="authEmail" class="form-control" placeholder="Email Address"></div>
+            <div class="input-group"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="authPassword" class="form-control" placeholder="Password"></div>
+            <button class="btn btn-primary" id="authBtn" onclick="handleAuth()">Login</button>
+            <p style="margin-top:15px; font-size:13px; color:var(--text-muted);"><span id="authToggleText">New user?</span> <strong style="color:var(--accent); cursor:pointer;" onclick="toggleAuthMode()" id="authToggleBtn">Create Account</strong></p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" style="display:none; height:100vh; flex-direction:column;">
+        <header>
+            <div class="header-title" id="headerTitle">Home</div>
+            <div class="nav-icons">
+                <i class="fa-solid fa-bell" onclick="openModal('notifModal')"><span class="badge" id="notifBadge"></span></i>
+            </div>
+        </header>
+
+        <!-- Home Tab -->
+        <div id="tab-home" class="tab-content active" style="padding: 20px;">
+            <div class="card" style="background: linear-gradient(135deg, #1a1a1a, #000); border-color: var(--accent); text-align:center; padding:30px 15px;">
+                <h2 id="homeHeroTitle">Expert Pest Control</h2>
+                <p id="homeHeroTagline" style="font-size:13px; color:var(--text-muted); margin:10px 0 20px;">Safe, Odorless & 100% Effective</p>
+                <button class="btn btn-primary" onclick="switchTab('services', document.querySelectorAll('.nav-item')[1], 'Services')">View All Services</button>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:20px 0 10px;">
+                <h3 style="font-size:16px;">Top Services</h3>
+                <span style="color:var(--accent); font-size:12px; font-weight:600; cursor:pointer;" onclick="switchTab('services', document.querySelectorAll('.nav-item')[1], 'Services')">View All <i class="fa-solid fa-arrow-right"></i></span>
+            </div>
+            <div id="homeServicesContainer">Loading...</div>
+            
+            <h3 style="margin:25px 0 10px; font-size:16px;">Customer Reviews</h3>
+            <div id="reviewsContainer" style="display:flex; overflow-x:auto; gap:15px; padding-bottom:10px;">Loading...</div>
+        </div>
+
+        <!-- Services Tab -->
+        <div id="tab-services" class="tab-content" style="padding:20px;">
+            <h2 style="margin-bottom: 15px; font-size:18px;">All Services</h2>
+            <div id="allServicesContainer">Loading...</div>
+        </div>
+
+        <!-- Profile & Tracking Tab -->
+        <div id="tab-profile" class="tab-content" style="padding:20px;">
+            <div class="card" style="display:flex; align-items:center; gap:15px;">
+                <div class="tech-avatar" style="color:var(--accent);"><i class="fa-solid fa-user"></i></div>
+                <div style="flex:1;">
+                    <h3 id="profileName" style="font-size:16px; margin:0;">User</h3>
+                    <p id="profilePhone" style="font-size:12px; color:var(--text-muted); margin:0;">Add Phone</p>
+                </div>
+                <i class="fa-solid fa-pen-to-square" style="color:var(--text-muted); padding:10px; cursor:pointer;" onclick="openModal('editProfileModal')"></i>
+            </div>
+
+            <button class="btn btn-success" style="margin-bottom:20px; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="openWhatsApp()"><i class="fa-brands fa-whatsapp" style="font-size:20px;"></i> Chat with Support</button>
+
+            <h3 style="font-size:16px; margin-bottom:10px; color:var(--accent);">Live Tracking</h3>
+            <div id="liveTrackingArea"></div>
+
+            <h3 style="font-size:16px; margin:25px 0 10px;">Booking History</h3>
+            <div id="pastBookingsArea"></div>
+            
+            <button class="btn" style="background:transparent; border:1px solid #333; color:var(--danger); margin-top:20px;" onclick="logout()"><i class="fa-solid fa-power-off"></i> Logout</button>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home', this, 'Home')"><i class="fa-solid fa-house"></i>Home</div>
+            <div class="nav-item" onclick="switchTab('services', this, 'Services')"><i class="fa-solid fa-spray-can-sparkles"></i>Services</div>
+            <div class="nav-item" onclick="switchTab('profile', this, 'Profile & Tracking')"><i class="fa-solid fa-map-location-dot"></i>Profile</div>
+        </nav>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="bookingModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2>Book Service</h2><i class="fa-solid fa-circle-xmark" style="font-size:24px; color:#555; cursor:pointer;" onclick="closeModal('bookingModal')"></i>
+            </div>
+            <div class="input-group"><i class="fa-solid fa-bug input-icon"></i><select id="bookPest" class="form-control" style="appearance:none;"></select></div>
+            <div class="input-group"><i class="fa-solid fa-phone input-icon"></i><input type="number" id="bookPhone" class="form-control" placeholder="Mobile Number"></div>
+            <div class="input-group"><i class="fa-solid fa-map-pin input-icon"></i><input type="text" id="bookAddress" class="form-control" placeholder="Full Address"></div>
+            <div class="input-group"><i class="fa-solid fa-calendar input-icon"></i><input type="date" id="bookDate" class="form-control"></div>
+
+            <!-- Custom Notice -->
+            <div class="notice-box">
+                <i class="fa-solid fa-circle-info" style="font-size: 20px; margin-bottom: 8px;"></i><br>
+                Paste control hone ke bad aapse room ke requirement ke hisaab se payment liya jayega.
+            </div>
+
+            <button class="btn btn-primary" style="margin-top:20px;" onclick="submitBooking()">Confirm & Book</button>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div class="modal" id="ratingModal">
+        <div class="modal-content" style="text-align:center;">
+            <h2>Rate Your Service</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:15px;">How was the pest control experience?</p>
+            <div class="stars" id="starRating" style="margin-bottom:15px;">
+                <i class="fa-solid fa-star" onclick="setRating(1)"></i><i class="fa-solid fa-star" onclick="setRating(2)"></i><i class="fa-solid fa-star" onclick="setRating(3)"></i><i class="fa-solid fa-star" onclick="setRating(4)"></i><i class="fa-solid fa-star" onclick="setRating(5)"></i>
+            </div>
+            <input type="text" id="ratingMsg" class="form-control" placeholder="Write a short review (optional)">
+            <button class="btn btn-primary" onclick="submitRating()">Submit Feedback</button>
+            <button class="btn" style="background:transparent; margin-top:10px; color:var(--text-muted);" onclick="closeModal('ratingModal')">Skip</button>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal" id="notifModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2>Notifications</h2><i class="fa-solid fa-circle-xmark" style="font-size:24px; color:#555; cursor:pointer;" onclick="closeModal('notifModal')"></i>
+            </div>
+            <div id="notifList"></div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom:15px;">Edit Profile</h2>
+            <div class="input-group"><i class="fa-solid fa-phone input-icon"></i><input type="number" id="editPhone" class="form-control" placeholder="Default Phone"></div>
+            <div class="input-group"><i class="fa-solid fa-map-pin input-icon"></i><input type="text" id="editAddress" class="form-control" placeholder="Default Address"></div>
+            <button class="btn btn-primary" onclick="saveProfile()">Save Details</button>
+            <button class="btn" style="background:transparent; margin-top:10px; color:var(--text-muted);" onclick="closeModal('editProfileModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Message</div>
+
+    <script>
+        // --- YOUR FIREBASE CONFIG HERE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEsFB44-TKy_WOPBbSpvHXWhorikZZ_1E",
+            authDomain: "chanda-pest-control.firebaseapp.com",
+            databaseURL: "https://chanda-pest-control-default-rtdb.firebaseio.com",
+            projectId: "chanda-pest-control",
+            storageBucket: "chanda-pest-control.firebasestorage.app",
+            messagingSenderId: "1022041194890",
+            appId: "1:1022041194890:web:870f8bd3bc8bbf03198873"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database(); const auth = firebase.auth();
+
+        let currentUser = null, currentUserData = {};
+        let isLoginMode = true;
+        let localServices = [];
+        let selectedBookingForRating = null;
+        let currentRating = 5;
+        let supportPhone = "919999999999";
+
+        // Utilities
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+        function openModal(id) { document.getElementById(id).style.display='flex'; }
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        function switchTab(id, el, title) {
+            document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+            el.classList.add('active'); document.getElementById('headerTitle').innerText = title;
+            window.scrollTo(0,0);
+        }
+
+        // Auth
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                currentUser = user;
+                db.ref('users/'+user.uid).on('value', snap => {
+                    currentUserData = snap.val() || {};
+                    document.getElementById('profileName').innerText = currentUserData.name || 'User';
+                    document.getElementById('profilePhone').innerText = currentUserData.phone || 'No phone added';
+                    document.getElementById('editPhone').value = currentUserData.phone || '';
+                    document.getElementById('editAddress').value = currentUserData.address || '';
+                });
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                loadData(); listenNotifications();
+            } else {
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('authScreen').style.display = 'flex';
+                loadData(); 
+            }
+        });
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authSubtitle').innerText = isLoginMode ? "Login to continue" : "Create Account";
+            document.getElementById('authBtn').innerText = isLoginMode ? "Login" : "Sign Up";
+            document.getElementById('signupFields').style.display = isLoginMode ? "none" : "block";
+            document.getElementById('authToggleText').innerText = isLoginMode ? "New user?" : "Already joined?";
+            document.getElementById('authToggleBtn').innerText = isLoginMode ? "Create Account" : "Login";
+        }
+
+        function handleAuth() {
+            const e = document.getElementById('authEmail').value, p = document.getElementById('authPassword').value;
+            if(!e || !p) return showToast("Enter credentials");
+            if(isLoginMode) auth.signInWithEmailAndPassword(e,p).catch(err=>showToast(err.message));
+            else {
+                const n = document.getElementById('authName').value; if(!n) return showToast("Enter Name");
+                auth.createUserWithEmailAndPassword(e,p).then(cred => db.ref('users/'+cred.user.uid).set({name:n, email:e})).catch(err=>showToast(err.message));
+            }
+        }
+        function logout() { auth.signOut(); }
+
+        // Load Global Data
+        function loadData() {
+            // General Settings & Theme
+            db.ref('settings').on('value', snap => {
+                const s = snap.val() || {};
+                if(s.theme) {
+                    document.documentElement.style.setProperty('--accent', s.theme.accent);
+                    document.documentElement.style.setProperty('--bg-color', s.theme.bg);
+                    document.documentElement.style.setProperty('--accent-glow', s.theme.accent + '66');
+                }
+                if(s.siteName) {
+                    document.getElementById('authLogoName').innerText = s.siteName;
+                    document.getElementById('homeHeroTitle').innerText = s.siteName;
+                }
+                if(s.tagline) document.getElementById('homeHeroTagline').innerText = s.tagline;
+
+                supportPhone = s.whatsapp || "919999999999";
+            });
+
+            db.ref('services').on('value', snap => {
+                localServices = [];
+                let opts = '';
+                snap.forEach(c => { 
+                    let s = c.val();
+                    localServices.push(s); 
+                    opts += `<option value="${s.title}">${s.title}</option>`;
+                });
+                document.getElementById('bookPest').innerHTML = opts;
+                renderServices();
+            });
+
+            // Render Reviews
+            db.ref('reviews').limitToLast(5).on('value', snap => {
+                let html = '';
+                snap.forEach(c => {
+                    let r = c.val(); let stars = '★'.repeat(r.rating) + '☆'.repeat(5-r.rating);
+                    html += `<div class="card" style="min-width:220px; margin-bottom:0;"><h4 style="font-size:13px;">${r.name}</h4><div style="color:var(--accent); font-size:10px; margin:3px 0;">${stars}</div><p style="font-size:11px; color:var(--text-muted); line-height:1.4;">${r.msg}</p></div>`;
+                });
+                document.getElementById('reviewsContainer').innerHTML = html || "<p style='font-size:12px; color:#888;'>No reviews yet.</p>";
+            });
+
+            // Load Tracking Data
+            if(currentUser) {
+                db.ref('bookings').orderByChild('userID').equalTo(currentUser.uid).on('value', snap => {
+                    let activeHtml = '', pastHtml = '';
+                    snap.forEach(c => {
+                        let b = c.val(); let key = c.key;
+                        if(b.status === "Completed") {
+                            pastHtml += `<div class="card"><div style="display:flex; justify-content:space-between; margin-bottom:5px;"><strong>${b.pestType}</strong><span style="color:var(--success); font-size:12px;">Completed</span></div>
+                            ${!b.isRated ? `<button class="btn btn-outline" style="padding:8px; margin-top:10px; font-size:12px;" onclick="openRating('${key}')">Rate Service</button>` : `<p style="color:var(--accent); font-size:11px; margin-top:5px;">Thanks for rating!</p>`}</div>`;
+                        } else {
+                            let map = b.status==="Technician Assigned" ? 
+                                `<div class="tech-box"><div class="tech-avatar"><i class="fa-solid fa-user-helmet-safety"></i></div><div style="flex:1;"><h4 style="font-size:14px;">${b.techName || 'Expert'}</h4><p style="font-size:11px; color:var(--text-muted);">is arriving soon</p></div><a href="tel:${b.techPhone}" class="btn btn-success" style="width:auto; padding:8px 15px; font-size:12px;"><i class="fa-solid fa-phone"></i> Call</a></div>` : 
+                                `<div class="tech-box"><div class="tech-avatar" style="background:#333;"><i class="fa-solid fa-hourglass-half" style="color:#aaa;"></i></div><div><h4 style="font-size:14px;">Finding Expert</h4><p style="font-size:11px; color:var(--text-muted);">Please wait...</p></div></div>`;
+                            activeHtml += `<div class="card" style="border-color:var(--accent);"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><strong>${b.pestType}</strong><span style="color:var(--accent); font-size:12px; font-weight:bold;">${b.status}</span></div>${map}</div>`;
+                        }
+                    });
+                    document.getElementById('liveTrackingArea').innerHTML = activeHtml || "<p style='font-size:12px; color:#555;'>No active bookings.</p>";
+                    document.getElementById('pastBookingsArea').innerHTML = pastHtml || "<p style='font-size:12px; color:#555;'>No past bookings.</p>";
+                });
+            }
+        }
+
+        // Render Services in both Home (Top 2) and Services (All) tabs
+        function renderServices() {
+            let homeHtml = '', allHtml = '', count = 0;
+            
+            localServices.forEach(s => {
+                let mediaHtml = s.image ? `<img src="${s.image}" class="tech-avatar" style="object-fit:cover;">` : `<div class="tech-avatar"><i class="fa-solid fa-bug"></i></div>`;
+                
+                let cardHtml = `
+                <div class="card" style="display:flex; align-items:center; gap:15px; cursor:pointer;" onclick="prefillBooking('${s.title}')">
+                    ${mediaHtml}
+                    <div style="flex:1;">
+                        <h4 style="font-size:14px; margin-bottom:2px;">${s.title}</h4>
+                        <p style="font-size:11px; color:var(--text-muted); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${s.desc}</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="book-btn-mini">Book Now</div>
+                    </div>
+                </div>`;
+
+                if(count < 2) { homeHtml += cardHtml; }
+                allHtml += cardHtml;
+                count++;
+            });
+
+            document.getElementById('homeServicesContainer').innerHTML = homeHtml || "<p style='font-size:12px; color:#888;'>No services available.</p>";
+            document.getElementById('allServicesContainer').innerHTML = allHtml || "<p style='font-size:12px; color:#888;'>No services available.</p>";
+        }
+
+        function prefillBooking(service) {
+            document.getElementById('bookPest').value = service;
+            document.getElementById('bookPhone').value = currentUserData.phone || '';
+            document.getElementById('bookAddress').value = currentUserData.address || '';
+            openModal('bookingModal');
+        }
+
+        function submitBooking() {
+            const date = document.getElementById('bookDate').value;
+            const ph = document.getElementById('bookPhone').value;
+            const ad = document.getElementById('bookAddress').value;
+            if(!date || !ph || !ad) return showToast("Fill all fields");
+
+            const data = {
+                userID: currentUser.uid, name: currentUserData.name, phone: ph, address: ad,
+                pestType: document.getElementById('bookPest').value, date: date,
+                status: "Pending", timestamp: new Date().getTime(), isRated: false
+            };
+
+            db.ref('bookings').push(data).then(() => {
+                closeModal('bookingModal'); showToast("Booking Placed Successfully!");
+                switchTab('profile', document.querySelectorAll('.nav-item')[2], 'Profile & Tracking');
+            });
+        }
+
+        function saveProfile() {
+            db.ref('users/'+currentUser.uid).update({
+                phone: document.getElementById('editPhone').value,
+                address: document.getElementById('editAddress').value
+            }).then(()=>{ closeModal('editProfileModal'); showToast("Profile Updated"); });
+        }
+
+        function openWhatsApp() { window.open(`https://wa.me/${supportPhone}?text=Hi Chanda Pest Control, I need help.`, '_blank'); }
+
+        function listenNotifications() {
+            db.ref('notifications/'+currentUser.uid).on('value', snap => {
+                let html = ''; let unread = false;
+                snap.forEach(c => {
+                    let n = c.val(); if(!n.read) unread = true;
+                    html = `<div class="card" style="margin-bottom:10px; background:${n.read?'#1a1a1a':'#2a2a2a'}; border-left:3px solid ${n.read?'#555':'var(--accent)'};"><h4 style="font-size:13px;">${n.title}</h4><p style="font-size:11px; color:var(--text-muted);">${n.msg}</p></div>` + html;
+                });
+                document.getElementById('notifList').innerHTML = html || "<p style='font-size:12px; color:#555; text-align:center;'>No notifications</p>";
+                document.getElementById('notifBadge').style.display = unread ? 'block' : 'none';
+            });
+        }
+        
+        document.getElementById('notifModal').addEventListener('click', () => {
+            db.ref('notifications/'+currentUser.uid).once('value', snap => {
+                snap.forEach(c => c.ref.update({read: true}));
+            });
+        });
+
+        function openRating(id) { selectedBookingForRating = id; setRating(5); openModal('ratingModal'); }
+        function setRating(val) {
+            currentRating = val; let stars = document.getElementById('starRating').children;
+            for(let i=0; i<5; i++) { stars[i].className = i<val ? "fa-solid fa-star active" : "fa-solid fa-star"; }
+        }
+        function submitRating() {
+            const msg = document.getElementById('ratingMsg').value;
+            db.ref('bookings/'+selectedBookingForRating).update({isRated: true});
+            db.ref('reviews').push({ name: currentUserData.name, rating: currentRating, msg: msg || "Great service!" }).then(()=>{
+                closeModal('ratingModal'); showToast("Thanks for rating!");
+            });
+        }
+    </script>
+</body>
+</html>
